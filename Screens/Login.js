@@ -17,7 +17,7 @@ const Login = () => {
                 const userData = await AsyncStorage.getItem('user');
                 if (userData) {
                     // Navigate to HomePage if user data is found
-                    navigation.navigate("HomePage");
+                    navigation.navigate("BottomTabs");
                 }
             } catch (error) {
                 console.log(error);
@@ -40,7 +40,7 @@ const Login = () => {
                         AsyncStorage.setItem('user', JSON.stringify(userData))
                             .then(() => {
                                 Alert.alert("Success", "User successfully logged in");
-                                navigation.navigate("HomePage");
+                                navigation.navigate("BottomTabs");
                             })
                             .catch(error => {
                                 console.log(error);

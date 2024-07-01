@@ -1,68 +1,67 @@
-import React, {useRef, useEffect, useState} from 'react';
-import { StyleSheet, View, Text, Dimensions, ImageBackground, Image, TouchableOpacity, Pressable, ActivityIndicator } from 'react-native';
-import { GoogleSignin, statusCodes, GoogleSigninButton } from '@react-native-google-signin/google-signin';
-
-const screenHeight = Dimensions.get('window').height;
-const screenWidth = Dimensions.get('window').width;
-
-const Login = ({navigation}) => {
-
-    const webClientId = "286803464575-uh2ji3cmnigt21ems9308lsp4hhb46n8.apps.googleusercontent.com"; 
-
-    useEffect(()=>{
-        GoogleSignin.configure({
-            webClientId: webClientId,
-        })
-    },[])
-
-    const googleLogin = async () => {
-        try {
-            await GoogleSignin.hasPlayServices();
-
-
-            const userInfo = await GoogleSignin.signIn();
-
-            console.log("userinfo", userInfo);
-
-        } catch (error) {
-            if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-                console.log(error)
-            } else if (error.code === statusCodes.IN_PROGRESS) {
-                console.log(error)
-            } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-                console.log(error)
-            } else {
-            console.log(JSON.stringify(error),"error")
-
-            }
-        }
-      };
-    return(
-      <View style={{margin:20}}>
-          <Pressable onPress={googleLogin}>
-              <View style={styles.loginButton}>
-                <View style={{marginLeft:5}}>
-                    <Text style={{color: '#222222',fontWeight:'400',fontSize:18}}>
-                        Login with Google
-                    </Text>
-                </View>
-              </View>
-          </Pressable>
-      </View>
-    );
-}
-
-const styles= StyleSheet.create({
-    loginButton: {
-        display:"flex",
-        flexDirection:"row",
-        justifyContent:"center",
-        alignItems:"center",
-        backgroundColor:"#FFFFFF",
-        width:screenWidth-50,
-        height:48,
-        borderRadius:10
-    }
+import React, {useEffect} from 'react';
+import {View, Button} from 'react-native';
+import {
+  GoogleSignin,
+  statusCodes,
+} from '@react-native-google-signin/google-signin';
+import auth from '@react-native-firebase/auth';
+GoogleSignin.configure({
+  webClientId:
+    '286803464575-31k6ooem1ojb6laope2itj69v3odkvtk.apps.googleusercontent.com',
+    
 });
-
-export default Login;
+const GoogleLogin = () => {
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId:
+        '286803464575-31k6ooem1ojb6laope2itj69v3odkvtk.apps.googleusercontent.com',
+    });
+  }, []);
+  const onSignOut = async () => {
+    try {
+      await auth().signOut();
+      // Sign out from Google
+      await GoogleSignin.revokeAccess();
+      await GoogleSignin.signOut();
+      console.log('User signed out!');
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const onGoogleButtonPress = async () => {
+    // Get the user's ID token
+    const {idToken} = await GoogleSignin.signIn();
+    // Create a Google credential with the token
+    const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+    // Sign-in the user with the credential
+    return auth().signInWithCredential(googleCredential);
+  };
+  return (
+    <View>
+      <Button
+        title="Google Sign-In"
+        onPress={() =>
+          onGoogleButtonPress()
+            .then(response => console.log('Signed in with Google!', response))
+            .catch(err =>
+              console.log('THIS WAS THE ERROR IN LOGGING IN USING GOOGLE', err),
+            )
+        }
+      />
+      <Button
+        title="Google Sign-Out"
+        onPress={() =>
+          onSignOut()
+            .then(response => console.log('Signed out with Google!', response))
+            .catch(err =>
+              console.log(
+                'THIS WAS THE ERROR IN LOGGING  UOUTSING GOOGLE',
+                err,
+              ),
+            )
+        }
+      />
+    </View>
+  );
+};
+export default GoogleLogin;
